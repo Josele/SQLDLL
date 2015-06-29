@@ -46,18 +46,12 @@ using std::cin;
     if (dbname==std::string())
         {
          cout << "Null dbname\n";
-            return 0;
+            return -1;
 
         }
 
     int n = sqlite3_open(dbname.c_str(), db);
-    if( n != SQLITE_OK )
-    {
-
-        return n;
-    }
-
-    return 1;
+    return n;
 
 }
 
@@ -72,7 +66,7 @@ using std::cin;
     if (tbname==std::string())
         {
          cout << "Null dbname\n";
-            return 0;
+            return -1;
 
         }
     char* db_err = 0;
@@ -88,7 +82,7 @@ using std::cin;
         return n;
     }
 
-    return 1;
+    return 0;
 
 }
 
@@ -152,8 +146,7 @@ using std::cin;
 
 
 
-// Query an SQL sentence
-
+// Query an SQL sentence, only for making proofs
  void DLL_EXPORT jokersql(sqlite3* db, string sql)
 {
     char* db_err = 0;
