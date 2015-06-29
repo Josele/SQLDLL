@@ -2,7 +2,8 @@ EXPORTS
     CreateDatabase @1
     CreateTable @2
     DllMain@12 @3
-    display @4
-    ejemplo @5
-    fill @6
-    jokersql @7
+    discol @4
+    display @5
+    ejemplo @6
+    fill @7
+    jokersql @8

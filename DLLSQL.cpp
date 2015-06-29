@@ -51,8 +51,9 @@ using std::cin;
         }
 
     int n = sqlite3_open(dbname.c_str(), db);
+   if(n !=SQLITE_OK)
     return n;
-
+return 0;
 }
 
 
@@ -61,7 +62,7 @@ using std::cin;
 // Add a new table to the database.  If the table
 // name already exists then an error message will be
 // displayed.
- int DLL_EXPORT CreateTable(sqlite3* db, string& tbname)
+ int DLL_EXPORT CreateTable(sqlite3* db, string tbname,char * db_err)
 {
     if (tbname==std::string())
         {
@@ -69,14 +70,12 @@ using std::cin;
             return -1;
 
         }
-    char* db_err = 0;
     string statement;
     if( tbname == "" )
-        return 0;
-    statement = "CREATE TABLE " + tbname + " (id int primary key,name char(10), ref char(30));";
+        return -1;
+    statement = "CREATE TABLE " + tbname + " (id integer primary key asc,name char(10), ref char(30));";
 
     int n = sqlite3_exec(db, statement.c_str(), NULL, 0, &db_err);
-    dsperr(&db_err);
     if( n != SQLITE_OK )
     {
         return n;
@@ -136,6 +135,28 @@ using std::cin;
     if( tbname.length() > 0)
     {
         select = "select * from " + tbname + ";";
+        sqlite3_exec(db, select.c_str(), callback, 0, &db_err);
+        dsperr(&db_err);
+    }
+}
+
+
+// Query the database for one column data in the table and
+// display it in the callback function.
+ void DLL_EXPORT discol(sqlite3* db, string tbname,string col)
+{
+    char* db_err = 0;
+    string select;
+    if (tbname==std::string()|| col==std::string())
+            //tbname.length() == 0
+        {
+         cout << "Null tbname or cloumn\n";
+            return;
+
+        }
+    if( tbname.length() > 0)
+    {
+        select = "select" + col + "from " + tbname + ";";
         sqlite3_exec(db, select.c_str(), callback, 0, &db_err);
         dsperr(&db_err);
     }
