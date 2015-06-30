@@ -32,7 +32,7 @@ extern "C"
        int DLL_EXPORT fill(sqlite3* db, string tbname);
       void DLL_EXPORT display(sqlite3* db, string tbname);
       void DLL_EXPORT jokersql(sqlite3* db, string sql);
-      void DLL_EXPORT discol(sqlite3* db, string tbname,string col);
+      int DLL_EXPORT discol(sqlite3* db, string tbname,string col,int (*callback)(void*,int,char**,char**),void *answer);
 
 
 

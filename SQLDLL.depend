@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1435572436 source:c:\users\josele\documents\c_c++\dll\sqldll\dllsql.cpp
+1435657192 source:c:\users\josele\documents\c_c++\dll\sqldll\dllsql.cpp
 	"DLLSQL.h"
 	<iostream>
 
@@ -9,7 +9,7 @@
 1396003530 c:\users\josele\documents\c_c++\dll\sqldll\sqlite3.h
 	<stdarg.h>
 
-1435572196 c:\users\josele\documents\c_c++\dll\sqldll\dllsql.h
+1435657102 c:\users\josele\documents\c_c++\dll\sqldll\dllsql.h
 	<windows.h>
 	"sqlite3.h"
 	<stdio.h>

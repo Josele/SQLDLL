@@ -143,23 +143,29 @@ return 0;
 
 // Query the database for one column data in the table and
 // display it in the callback function.
- void DLL_EXPORT discol(sqlite3* db, string tbname,string col)
-{
-    char* db_err = 0;
+ int DLL_EXPORT discol(sqlite3* db, string tbname,string col,int (*c_callback)(void*,int,char**,char**),void *answer)
+{   int result;
+    string* hola = static_cast<string*>(answer);
+    *hola="t";
+   char* db_err = 0;
     string select;
     if (tbname==std::string()|| col==std::string())
             //tbname.length() == 0
         {
          cout << "Null tbname or cloumn\n";
-            return;
+            return-1;
 
         }
     if( tbname.length() > 0)
     {
-        select = "select" + col + "from " + tbname + ";";
-        sqlite3_exec(db, select.c_str(), callback, 0, &db_err);
+        select = "select " + col + " from " + tbname + ";";
+        result =sqlite3_exec(db, select.c_str(),c_callback,hola , &db_err);
         dsperr(&db_err);
+        return result;
     }
+return -1;
+
+
 }
 
 
