@@ -1,5 +1,6 @@
 #include "DLLSQL.h"
 #include <iostream>
+
 using std::cout;
 using std::cin;
 
@@ -50,7 +51,7 @@ using std::cin;
 
         }
 
-    int n = sqlite3_open(dbname.c_str(), db);
+    int n = sqlite3_open_v2(dbname.c_str(), db,SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,NULL);
    if(n !=SQLITE_OK)
     return n;
 return 0;
@@ -143,23 +144,44 @@ return 0;
 
 // Query the database for one column data in the table and
 // display it in the callback function.
- int DLL_EXPORT discol(sqlite3* db, string tbname,string col,int (*c_callback)(void*,int,char**,char**),void *answer)
+ int DLL_EXPORT row(sqlite3* db, string tbname,string col,string id,int (*c_callback)(void*,int,char**,char**),void *answer)
 {   int result;
     string* hola = static_cast<string*>(answer);
-    *hola="t";
    char* db_err = 0;
     string select;
-    if (tbname==std::string()|| col==std::string())
+    if (tbname==std::string()|| id==std::string()|| col==std::string())
             //tbname.length() == 0
         {
-         cout << "Null tbname or cloumn\n";
+         cout << "Null tbname || column|| id\n";
             return-1;
 
         }
     if( tbname.length() > 0)
     {
-        select = "select " + col + " from " + tbname + ";";
+        select = "select " + col + " from " + tbname + " where id = "+ id +";";
         result =sqlite3_exec(db, select.c_str(),c_callback,hola , &db_err);
+        dsperr(&db_err);
+        return result;
+    }
+return -1;
+
+
+}// Query the database for one column data in the table and
+// display it in the callback function.
+ int DLL_EXPORT n_row(sqlite3* db, string tbname,int (*c_callback)(void*,int,char**,char**),void *answer)
+{   int result;
+    string* cont = static_cast<string*>(answer);
+    char* db_err = 0;
+    string sql;
+    if (tbname==std::string())
+        {
+         cout << "Null tbname\n";
+            return-1;
+
+        }
+    if( tbname.length() > 0)
+    {   sql ="SELECT COALESCE(MAX(id)+1, 0) FROM " +tbname;
+        result =sqlite3_exec(db, sql.c_str(),c_callback,cont , &db_err);
         dsperr(&db_err);
         return result;
     }
@@ -169,9 +191,39 @@ return -1;
 }
 
 
+string DLL_EXPORT readFromDB(sqlite3* db, int id)
+{   string result;
+    sqlite3_stmt *stmt;
+     const char *sql="SELECT name FROM datos WHERE id = ?";
+    int rc = sqlite3_prepare_v2(db, sql,-1 , &stmt, NULL);
+    if (rc != SQLITE_OK)
+        return string(sqlite3_errmsg(db));
 
+    rc = sqlite3_bind_int(stmt, 1, id);    // Using parameters ("?") is not
+    if (rc != SQLITE_OK) {                 // really necessary, but recommended
+        string errmsg(sqlite3_errmsg(db)); // (especially for strings) to avoid
+        sqlite3_finalize(stmt);            // formatting problems and SQL
+        return errmsg;                      // injection attacks.
+    }
 
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_ROW && rc != SQLITE_DONE) {
+        string errmsg(sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        return errmsg;
+    }
+    if (rc == SQLITE_DONE) {
+        sqlite3_finalize(stmt);
+        return string("customer not found");
+    }
 
+    result= string((char *)sqlite3_column_text(stmt, 0))+ " ";
+   // *result=*result + string((char*)sqlite3_column_text(stmt, 1)) +" ";
+    //*result=*result + string((char*)sqlite3_column_int(stmt, 2));
+
+    sqlite3_finalize(stmt);
+   return result;
+}
 
 // Query an SQL sentence, only for making proofs
  void DLL_EXPORT jokersql(sqlite3* db, string sql)
