@@ -144,7 +144,7 @@ return 0;
 
 // Query the database for one column data in the table and
 // display it in the callback function.
- int DLL_EXPORT row(sqlite3* db, string tbname,string col,string id,int (*c_callback)(void*,int,char**,char**),void *answer)
+ int DLL_EXPORT row(sqlite3* db, string tbname,string col,string id,int (*c_callback)(void*,int,char**,char**),void *answer, char **argv)
 {   int result;
     string* hola = static_cast<string*>(answer);
    char* db_err = 0;
@@ -179,14 +179,10 @@ return -1;
             return-1;
 
         }
-    if( tbname.length() > 0)
-    {   sql ="SELECT COALESCE(MAX(id)+1, 0) FROM " +tbname;
+        sql ="SELECT COALESCE(MAX(id)+1, 0) FROM " +tbname;
         result =sqlite3_exec(db, sql.c_str(),c_callback,cont , &db_err);
         dsperr(&db_err);
         return result;
-    }
-return -1;
-
 
 }
 
