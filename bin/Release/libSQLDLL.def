@@ -2,10 +2,11 @@ EXPORTS
     CreateDatabase @1
     CreateTable @2
     DllMain@12 @3
-    display @4
-    ejemplo @5
-    fill @6
-    jokersql @7
-    n_row @8
-    readFromDB @9
-    row @10
+    add_item @4
+    display @5
+    ejemplo @6
+    fill @7
+    jokersql @8
+    n_row @9
+    readFromDB @10
+    row @11

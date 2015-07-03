@@ -44,16 +44,21 @@ using std::cin;
 // path and filename which may, or may not, contain spaces.
      int DLL_EXPORT CreateDatabase(sqlite3** db,string dbname)
 {
+    char hang[2];
     if (dbname==std::string())
         {
-         cout << "Null dbname\n";
-            return -1;
-
+        throw std::invalid_argument("stoi: invalid argument dbanme name");
         }
 
+
     int n = sqlite3_open_v2(dbname.c_str(), db,SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,NULL);
+
    if(n !=SQLITE_OK)
-    return n;
+   {
+       itoa(n,hang,10);
+       throw string("sqlite3_open_v2 failure: Code "+ string(hang));
+
+   }
 return 0;
 }
 
@@ -67,20 +72,17 @@ return 0;
 {
     if (tbname==std::string())
         {
-         cout << "Null dbname\n";
-            return -1;
+         throw std::invalid_argument( "stoi: invalid argument table name");
 
         }
     string statement;
-    if( tbname == "" )
-        return -1;
+
     statement = "CREATE TABLE " + tbname + " (id integer primary key asc,name char(10), ref char(30));";
 
     int n = sqlite3_exec(db, statement.c_str(), NULL, 0, &db_err);
     if( n != SQLITE_OK )
-    {
-        return n;
-    }
+    throw string("sqlite3 failure"+ string(db_err));
+
 
     return 0;
 
@@ -120,6 +122,29 @@ return 0;
 }
 
 
+// Add one item to a table
+// The column must be specify
+//
+ int DLL_EXPORT add_item(sqlite3* db, string tbname,string col,string item)
+{
+    char* db_err = 0;
+    if (tbname==std::string()||col==std::string()||item==std::string())
+        throw std::invalid_argument( "stoi: invalid argument table name");
+
+
+        char buf[200];
+        sprintf(buf,"insert into %s (%s) values ('%s');", tbname.c_str(), col.c_str(),item.c_str());
+        int n = sqlite3_exec(db, buf, NULL, 0, &db_err);
+        dsperr(&db_err);
+        if( n != SQLITE_OK )
+        {
+        throw "sqlite3_exec failure: Code ";
+        }
+
+    return 0;
+}
+
+
 // Query the database for all the data in the table and
 // display it in the callback function.
  void DLL_EXPORT display(sqlite3* db, string tbname)
@@ -152,8 +177,7 @@ return 0;
     if (tbname==std::string()|| id==std::string()|| col==std::string())
             //tbname.length() == 0
         {
-         cout << "Null tbname || column|| id\n";
-            return-1;
+            throw std::invalid_argument( "stoi: invalid argument table name or column");
 
         }
     if( tbname.length() > 0)
@@ -174,16 +198,14 @@ return -1;
     char* db_err = 0;
     string sql;
     if (tbname==std::string())
-        {
-         cout << "Null tbname\n";
-            return-1;
+         throw std::invalid_argument( "stoi: invalid argument table name");
+    sql ="SELECT COALESCE(MAX(id)+1, 0) FROM " +tbname;
+    result =sqlite3_exec(db, sql.c_str(),c_callback,cont , &db_err);
+    dsperr(&db_err);
+    if(result != SQLITE_OK)
+        throw "sqlite3_open_v2 failure: Code ";
 
-        }
-        sql ="SELECT COALESCE(MAX(id)+1, 0) FROM " +tbname;
-        result =sqlite3_exec(db, sql.c_str(),c_callback,cont , &db_err);
-        dsperr(&db_err);
-        return result;
-
+    return 0;
 }
 
 
