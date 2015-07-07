@@ -3,10 +3,13 @@ EXPORTS
     CreateTable @2
     DllMain@12 @3
     add_item @4
-    display @5
-    ejemplo @6
-    fill @7
-    jokersql @8
-    n_row @9
-    readFromDB @10
-    row @11
+    add_text @5
+    del_item @6
+    display @7
+    ejemplo @8
+    fill @9
+    id_row @10
+    jokersql @11
+    n_row @12
+    readFromDB @13
+    row @14
