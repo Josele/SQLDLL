@@ -2,14 +2,11 @@ EXPORTS
     CreateDatabase @1
     CreateTable @2
     DllMain@12 @3
-    add_item @4
-    add_text @5
-    del_item @6
-    display @7
-    ejemplo @8
-    fill @9
-    id_row @10
-    jokersql @11
-    n_row @12
-    readFromDB @13
-    row @14
+    _Z10readFromDBP7sqlite3i @4
+    _Z7ejemploc @5
+    add_item @6
+    add_text @7
+    del_item @8
+    id_row @9
+    n_row @10
+    row @11
