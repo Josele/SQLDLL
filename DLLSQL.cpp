@@ -1,11 +1,4 @@
 #include "DLLSQL.h"
-#include <iostream>
-
-using std::cout;
-using std::cin;
-
-
-
 
 /**
 // This function just display an error message that
@@ -41,14 +34,14 @@ using std::cin;
 // If the database does not exist it will be
 // created.  Note that you can specif the full
 // path and filename which may, or may not, contain spaces.
-     int DLL_EXPORT CreateDatabase(sqlite3** db,string dbname)
+     int DLL_EXPORT CreateDatabase(sqlite3** db,const char * dbname)
 {
     char hang[2]; //Not more than 2 numbers for error codes
-    if (dbname==std::string())
+    if (dbname=='\0')
         {
         throw std::invalid_argument("stoi: invalid argument dbanme name");
         }
-    int n = sqlite3_open_v2(dbname.c_str(), db,SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,NULL);
+    int n = sqlite3_open_v2(dbname, db,SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,NULL);
     if(n !=SQLITE_OK)
         {
             itoa(n,hang,10);
@@ -59,13 +52,13 @@ using std::cin;
 // Add a new table to the database.  If the table
 // name already exists then an error message will be
 // displayed.
- int DLL_EXPORT CreateTable(sqlite3* db, string tbname,char * db_err)
+ int DLL_EXPORT CreateTable(sqlite3* db,const char * tbname,char * db_err)
 {
-    if (tbname==std::string())
+    if (tbname=='\0')
         {
             throw std::invalid_argument( "Invalid argument table name");
         }
-    char* zSQL = sqlite3_mprintf("CREATE TABLE %q (id integer primary key asc,name char(10), ref TEXT DEFAULT 'New')",tbname.c_str());
+    char* zSQL = sqlite3_mprintf("CREATE TABLE %q (id integer primary key asc,name char(10), ref TEXT DEFAULT 'New', parms TEXT DEFAULT '', libs TEXT DEFAULT '')",tbname);
     int n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
     sqlite3_free(zSQL);
     if( n != SQLITE_OK )
@@ -198,9 +191,7 @@ int DLL_EXPORT add_text(sqlite3* db, string tbname,string col,string id,string i
 
         }
         char *zSQL = sqlite3_mprintf("select %q from %q where id = %q",col.c_str(),tbname.c_str(),id.c_str());
-      //  select = "select " + col + " from " + tbname + " where id = "+ id +";";
         result =sqlite3_exec(db, zSQL,c_callback,cont , &db_err);
-        //dsperr(&db_err);
         sqlite3_free(zSQL);
         if(result != SQLITE_OK)
             throw std::runtime_error("sqlite3_open_v2 failure: "+string(db_err));
@@ -220,12 +211,10 @@ int DLL_EXPORT add_text(sqlite3* db, string tbname,string col,string id,string i
     string sql;
     if (tbname==std::string())
          throw std::invalid_argument( "stoi: invalid argument table name");
-    sql ="SELECT COALESCE(MAX(id)+1, 0) FROM " +tbname;
-    result =sqlite3_exec(db, sql.c_str(),c_callback,cont , &db_err);
-    //dsperr(&db_err);
+    char *zSQL = sqlite3_mprintf("SELECT COALESCE(MAX(id)+1, 0) FROM %q",tbname.c_str());
+    result =sqlite3_exec(db, zSQL,c_callback,cont , &db_err);
     if(result != SQLITE_OK)
         throw std::runtime_error("sqlite3_open_v2 failure: "+string(db_err));
-
     return 0;
 }
 // count the number of row in the database
@@ -245,7 +234,7 @@ int DLL_EXPORT add_text(sqlite3* db, string tbname,string col,string id,string i
     return 0;
 }
 
-
+/**
 string DLL_EXPORT readFromDB(sqlite3* db, int id)
 {   string result;
     sqlite3_stmt *stmt;
@@ -272,14 +261,14 @@ string DLL_EXPORT readFromDB(sqlite3* db, int id)
         return string("customer not found");
     }
 
-    result= string((char *)sqlite3_column_text(stmt, 0))+ " ";
-   // *result=*result + string((char*)sqlite3_column_text(stmt, 1)) +" ";
-    //*result=*result + string((char*)sqlite3_column_int(stmt, 2));
+    *result= string((char *)sqlite3_column_text(stmt, 0))+ " ";
+    *result=*result + string((char*)sqlite3_column_text(stmt, 1)) +" ";
+     *result=*result + string((char*)sqlite3_column_int(stmt, 2));
 
     sqlite3_finalize(stmt);
    return result;
 }
-/**
+
 // Query an SQL sentence, only for making proofs
  void DLL_EXPORT jokersql(sqlite3* db, string sql)
 {
@@ -302,13 +291,13 @@ string DLL_EXPORT readFromDB(sqlite3* db, int id)
 */
 
 
-
+/**
 // This function just display an error message that
   int DLL_EXPORT ejemplo(char db_err)
 {
     return 1;
 }
-
+*/
 
 /**
 // a sample exported function

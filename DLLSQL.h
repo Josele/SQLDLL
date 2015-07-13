@@ -1,11 +1,12 @@
 #ifndef __DLLSQL_H__
 #define __DLLSQL_H__
 
+#include <iostream>
 #include <windows.h>
 #include "sqlite3.h"
 #include <stdio.h>
 #include <string>
-#include <stdexcept>      // std::invalid_argument
+#include <stdexcept>
 
 /*  To use this exported function of dll, include this header
  *  in your project.
@@ -28,9 +29,9 @@ extern "C"
 
 
 
-       int DLL_EXPORT CreateDatabase(sqlite3** db,string dbname); //being used
+       int DLL_EXPORT CreateDatabase(sqlite3** db,const char* dbname); //being used
       // int DLL_EXPORT ejemplo(char db_err);
-       int DLL_EXPORT CreateTable(sqlite3* db, string tbname,char * db_err); //being used
+       int DLL_EXPORT CreateTable(sqlite3* db,const char* tbname,char * db_err); //being used
        int DLL_EXPORT add_item(sqlite3* db, string tbname,string col,string item); //being used
        int DLL_EXPORT del_item(sqlite3* db, string tbname,string item); //being used
       // int DLL_EXPORT fill(sqlite3* db, string tbname);
