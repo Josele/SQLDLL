@@ -52,13 +52,14 @@
 // Add a new table to the database.  If the table
 // name already exists then an error message will be
 // displayed.
- int DLL_EXPORT CreateTable(sqlite3* db,const char * tbname,char * db_err)
+ int DLL_EXPORT CreateTable(sqlite3* db,const char * tbname)
 {
+    char* db_err = 0;
     if (tbname=='\0')
         {
             throw std::invalid_argument( "Invalid argument table name");
         }
-    char* zSQL = sqlite3_mprintf("CREATE TABLE %q (id integer primary key asc,name char(10), ref TEXT DEFAULT 'New', parms TEXT DEFAULT '', libs TEXT DEFAULT '')",tbname);
+    char* zSQL = sqlite3_mprintf("CREATE TABLE %q (id integer primary key asc,name char(10), ref TEXT DEFAULT 'New', parms TEXT DEFAULT '', libs TEXT DEFAULT '', ret TEXT DEFAULT 'void')",tbname);
     int n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
     sqlite3_free(zSQL);
     if( n != SQLITE_OK )
@@ -100,12 +101,12 @@
 // Add one item to a table
 // The column must be specify
 //
- int DLL_EXPORT add_item(sqlite3* db, string tbname,string col,string item)
+ int DLL_EXPORT add_item(sqlite3* db, const char* tbname,const char* col,const char* item)
 {
     char* db_err = 0;
-    if (tbname==std::string()||col==std::string()||item==std::string())
+    if (tbname=='\0'||col=='\0'||item=='\0')
         throw std::invalid_argument( "stoi: invalid argument table name");
-    char *zSQL = sqlite3_mprintf("INSERT INTO %q (%Q) VALUES(%Q)", tbname.c_str(),col.c_str() ,item.c_str());
+    char *zSQL = sqlite3_mprintf("INSERT INTO %q (%Q) VALUES(%Q)", tbname,col,item);
     int n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
     sqlite3_free(zSQL);
     if( n != SQLITE_OK )
@@ -118,13 +119,13 @@
 // Add one text to a table using UPDATE query
 // The column must be specify and the id
 //
-int DLL_EXPORT add_text(sqlite3* db, string tbname,string col,string id,string item)
+int DLL_EXPORT add_text(sqlite3* db,const char* tbname,const char* col,const char* id,const char* item)
 {
     char* db_err = 0;
-    if (tbname==std::string()||col==std::string()||item==std::string())
+    if (tbname=='\0'||col=='\0'||item=='\0')
         throw std::invalid_argument( "stoi: invalid argument table name");
 
-    char *zSQL = sqlite3_mprintf("UPDATE %q SET %Q=(%Q) WHERE id=%q", tbname.c_str(),col.c_str() ,item.c_str(),id.c_str());
+    char *zSQL = sqlite3_mprintf("UPDATE %q SET %Q=(%Q) WHERE id=%q", tbname,col,item,id);
     int n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
     sqlite3_free(zSQL);
     if( n != SQLITE_OK )
@@ -136,13 +137,13 @@ int DLL_EXPORT add_text(sqlite3* db, string tbname,string col,string id,string i
 // Delete one item to a table
 // The column must be specify
 //
- int DLL_EXPORT del_item(sqlite3* db, string tbname,string item)
+ int DLL_EXPORT del_item(sqlite3* db, const char* tbname,const char* item)
 {
     char* db_err = 0;
-    if (tbname==std::string()||item==std::string())
+    if (tbname=='\0'||item=='\0')
         throw std::invalid_argument( "stoi: invalid argument table name");
 
-    char *zSQL = sqlite3_mprintf("delete from %q where id = %q", tbname.c_str(),item.c_str());
+    char *zSQL = sqlite3_mprintf("delete from %q where id = %q", tbname,item);
         //sprintf(buf,"delete from %s where id = %s;", tbname.c_str(),item.c_str());
     int n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
     //dsperr(&db_err);
@@ -180,17 +181,17 @@ int DLL_EXPORT add_text(sqlite3* db, string tbname,string col,string id,string i
 */
 // Query the database for one column data in the table and
 // display it in the callback function.
- int DLL_EXPORT row(sqlite3* db, string tbname,string col,string id,int (*c_callback)(void*,int,char**,char**),void *answer)
+ int DLL_EXPORT row(sqlite3* db,const char* tbname,const char* col,const char* id,int (*c_callback)(void*,int,char**,char**),void *answer)
 {   int result;
     string* cont = static_cast<string*>(answer);
-   char* db_err = 0;
+    char* db_err = 0;
     string select;
-    if (tbname==std::string()|| id==std::string()|| col==std::string())
+    if (tbname=='\0'|| id=='\0'|| col=='\0')
         {
             throw std::invalid_argument( "stoi: invalid argument table name or column");
 
         }
-        char *zSQL = sqlite3_mprintf("select %q from %q where id = %q",col.c_str(),tbname.c_str(),id.c_str());
+        char *zSQL = sqlite3_mprintf("select %q from %q where id = %q",col,tbname,id);
         result =sqlite3_exec(db, zSQL,c_callback,cont , &db_err);
         sqlite3_free(zSQL);
         if(result != SQLITE_OK)
@@ -204,31 +205,29 @@ int DLL_EXPORT add_text(sqlite3* db, string tbname,string col,string id,string i
 
 }
 // count the number of row in the database
- int DLL_EXPORT n_row(sqlite3* db, string tbname,int (*c_callback)(void*,int,char**,char**),void *answer)
+ int DLL_EXPORT n_row(sqlite3* db,const char* tbname,int (*c_callback)(void*,int,char**,char**),void *answer)
 {   int result;
     string* cont = static_cast<string*>(answer);
     char* db_err = 0;
-    string sql;
-    if (tbname==std::string())
+    if (tbname=='\0')
          throw std::invalid_argument( "stoi: invalid argument table name");
-    char *zSQL = sqlite3_mprintf("SELECT COALESCE(MAX(id)+1, 0) FROM %q",tbname.c_str());
+    char *zSQL = sqlite3_mprintf("SELECT COALESCE(MAX(id)+1, 0) FROM %q",tbname);
     result =sqlite3_exec(db, zSQL,c_callback,cont , &db_err);
+    sqlite3_free(zSQL);
     if(result != SQLITE_OK)
         throw std::runtime_error("sqlite3_open_v2 failure: "+string(db_err));
     return 0;
 }
 // count the number of row in the database
- int DLL_EXPORT id_row(sqlite3* db, string tbname,string col,string sel,int (*c_callback)(void*,int,char**,char**),void *answer)
+ int DLL_EXPORT id_row(sqlite3* db,const char* tbname,const char* col,const char* sel,int (*c_callback)(void*,int,char**,char**),void *answer)
 {   int result;
     string* cont = static_cast<string*>(answer);
     char* db_err = 0;
-    string sql;
-    if (tbname==std::string())
+    if (tbname=='\0')
          throw std::invalid_argument( "stoi: invalid argument table name");
-    char *zSQL = sqlite3_mprintf("select id from %q where %q = %Q", tbname.c_str(),col.c_str(),sel.c_str());
+    char *zSQL = sqlite3_mprintf("select id from %q where %q = %Q", tbname,col,sel);
     result =sqlite3_exec(db, zSQL,c_callback,cont , &db_err);
     sqlite3_free(zSQL);
-    //dsperr(&db_err);
     if(result != SQLITE_OK)
         throw std::runtime_error("sqlite3_open_v2 failure: "+string(db_err));
     return 0;
