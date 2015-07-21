@@ -33,7 +33,7 @@ extern "C"
       // int DLL_EXPORT ejemplo(char db_err);
        int  DLL_EXPORT CreateTable(sqlite3* db,const char* tbname); //being used
        int DLL_EXPORT add_item(sqlite3* db,const char* tbname,const char* col,const char* item); //being used
-       int DLL_EXPORT del_item(sqlite3* db,const char* tbname,const char* item); //being used
+       int DLL_EXPORT del_item(sqlite3* db,const char* tbname,const char* item,const char* id); //being used
       // int DLL_EXPORT fill(sqlite3* db, string tbname);
       // void DLL_EXPORT display(sqlite3* db, string tbname);
       // void DLL_EXPORT jokersql(sqlite3* db, string sql);

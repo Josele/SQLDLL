@@ -61,10 +61,18 @@
         }
     char* zSQL = sqlite3_mprintf("CREATE TABLE %q (id integer primary key asc,name char(10), ref TEXT DEFAULT 'New', parms TEXT DEFAULT '', libs TEXT DEFAULT '', ret TEXT DEFAULT 'void')",tbname);
     int n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
+    if( n != SQLITE_OK )
+        throw std::runtime_error("Sqlite3 failure "+ string(db_err));
+    zSQL = sqlite3_mprintf("CREATE TABLE params (id2 integer,type char(10) DEFAULT '', value TEXT DEFAULT '', FOREIGN KEY (id2)  REFERENCES datos(id) ON DELETE CASCADE)");
+    n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
     sqlite3_free(zSQL);
     if( n != SQLITE_OK )
         throw std::runtime_error("Sqlite3 failure "+ string(db_err));
+
     return 0;
+
+
+
 }
 
 /**
@@ -76,7 +84,7 @@
     char* db_err = 0;
         if (tbname==std::string())
             //tbname.length() == 0
-        {
+        {"CREATE TABLE params (name TEXT ,type char(10) DEFAULT '', value TEXT DEFAULT '', FOREIGN KEY(name) REFERENCES datos(name))
          cout << "Null tbname\n";
             return 0;
 
@@ -137,15 +145,31 @@ int DLL_EXPORT add_text(sqlite3* db,const char* tbname,const char* col,const cha
 // Delete one item to a table
 // The column must be specify
 //
- int DLL_EXPORT del_item(sqlite3* db, const char* tbname,const char* item)
+ int DLL_EXPORT del_item(sqlite3* db, const char* tbname,const char* item,const char* id)
 {
     char* db_err = 0;
-    if (tbname=='\0'||item=='\0')
+    if (tbname=='\0'||item=='\0'||id=='\0')
         throw std::invalid_argument( "stoi: invalid argument table name");
 
-    char *zSQL = sqlite3_mprintf("delete from %q where id = %q", tbname,item);
-        //sprintf(buf,"delete from %s where id = %s;", tbname.c_str(),item.c_str());
+    char *zSQL = sqlite3_mprintf("PRAGMA foreign_keys = ON");
+        //sprintf(buf,"delete from %s where id = %s;", tbname.c_str(),iid,tem.c_str());
     int n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
+    //dsperr(&db_err);
+    if( n != SQLITE_OK )
+        {
+        throw std::runtime_error("sqlite3_exec failure: "+string(db_err));
+        }
+    zSQL = sqlite3_mprintf("delete from %q where %q = '%q'", tbname,id,item);
+        //sprintf(buf,"delete from %s where id = %s;", tbname.c_str(),iid,tem.c_str());
+     n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
+    //dsperr(&db_err);
+    if( n != SQLITE_OK )
+        {
+        throw std::runtime_error("sqlite3_exec failure: "+string(db_err));
+        }
+        zSQL = sqlite3_mprintf("PRAGMA foreign_keys = OFF;");
+        //sprintf(buf,"delete from %s where id = %s;", tbname.c_str(),iid,tem.c_str());
+     n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
     //dsperr(&db_err);
     sqlite3_free(zSQL);
     if( n != SQLITE_OK )
