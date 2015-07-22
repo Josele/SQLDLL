@@ -63,7 +63,7 @@
     int n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
     if( n != SQLITE_OK )
         throw std::runtime_error("Sqlite3 failure "+ string(db_err));
-    zSQL = sqlite3_mprintf("CREATE TABLE params (id2 integer,type char(10) DEFAULT '', value TEXT DEFAULT '', FOREIGN KEY (id2)  REFERENCES datos(id) ON DELETE CASCADE)");
+    zSQL = sqlite3_mprintf("CREATE TABLE params (id integer,name char(15) DEFAULT '',type char(10) DEFAULT '', value char(30) DEFAULT '', FOREIGN KEY (id)  REFERENCES datos(id) ON DELETE CASCADE)");
     n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
     sqlite3_free(zSQL);
     if( n != SQLITE_OK )
@@ -106,6 +106,23 @@
 }
 
 */
+// Add params item to a table
+// The column must be specify
+//
+ int DLL_EXPORT add_params(sqlite3* db, const char* tbname,const char* col,const char* item,const char* item2,const char* item3)
+{
+    char* db_err = 0;
+    if (tbname=='\0'||col=='\0'||item=='\0')
+        throw std::invalid_argument( "stoi: invalid argument table name");
+    char *zSQL = sqlite3_mprintf("INSERT INTO %q (%s) VALUES(%Q,%Q,%Q)", tbname,col,item,item2,item3);
+    int n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
+    sqlite3_free(zSQL);
+    if( n != SQLITE_OK )
+        {
+        throw std::runtime_error("sqlite3_exec failure:"+string(db_err));
+        }
+    return 0;
+}
 // Add one item to a table
 // The column must be specify
 //
