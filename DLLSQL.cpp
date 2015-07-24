@@ -109,12 +109,12 @@
 // Add params item to a table
 // The column must be specify
 //
- int DLL_EXPORT add_params(sqlite3* db, const char* tbname,const char* col,const char* item,const char* item2,const char* item3)
+ int DLL_EXPORT add_params(sqlite3* db, const char* tbname,const char* col,const char* id,const char* item,const char* item2,const char* item3)
 {
     char* db_err = 0;
     if (tbname=='\0'||col=='\0'||item=='\0')
         throw std::invalid_argument( "stoi: invalid argument table name");
-    char *zSQL = sqlite3_mprintf("INSERT INTO %q (%s) VALUES(%Q,%Q,%Q)", tbname,col,item,item2,item3);
+    char *zSQL = sqlite3_mprintf("INSERT INTO %q (%s) VALUES(%Q,%Q,%Q,%Q)", tbname,col,id,item,item2,item3);
     int n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
     sqlite3_free(zSQL);
     if( n != SQLITE_OK )
@@ -144,13 +144,13 @@
 // Add one text to a table using UPDATE query
 // The column must be specify and the id
 //
-int DLL_EXPORT add_text(sqlite3* db,const char* tbname,const char* col,const char* id,const char* item)
+int DLL_EXPORT add_text(sqlite3* db,const char* tbname,const char* col,const char* item,const char* idname,const char* id)
 {
     char* db_err = 0;
-    if (tbname=='\0'||col=='\0'||item=='\0')
+    if (tbname=='\0'||col=='\0'||item=='\0'||idname=='\0')
         throw std::invalid_argument( "stoi: invalid argument table name");
 
-    char *zSQL = sqlite3_mprintf("UPDATE %q SET %Q=(%Q) WHERE id=%q", tbname,col,item,id);
+    char *zSQL = sqlite3_mprintf("UPDATE %s SET %s=(%Q) WHERE %s='%q'", tbname,col,item,idname,id);
     int n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
     sqlite3_free(zSQL);
     if( n != SQLITE_OK )
@@ -233,6 +233,31 @@ int DLL_EXPORT add_text(sqlite3* db,const char* tbname,const char* col,const cha
 
         }
         char *zSQL = sqlite3_mprintf("select %q from %q where id = %q",col,tbname,id);
+        result =sqlite3_exec(db, zSQL,c_callback,cont , &db_err);
+        sqlite3_free(zSQL);
+        if(result != SQLITE_OK)
+            throw std::runtime_error("sqlite3_open_v2 failure: "+string(db_err));
+
+        return 0;
+
+
+
+
+
+}
+// Query the database for one column data in the table and
+// display it in the callback function.
+ int DLL_EXPORT get_item(sqlite3* db,const char* tbname,const char* sel,const char* col,const char* id,const char* id2,int (*c_callback)(void*,int,char**,char**),void *answer)
+{   int result;
+    string* cont = static_cast<string*>(answer);
+    char* db_err = 0;
+    string select;
+    if (tbname=='\0'|| id=='\0'|| col=='\0'||sel=='\0'||id2=='\0')
+        {
+            throw std::invalid_argument( "stoi: invalid argument table name or column");
+
+        }
+        char *zSQL = sqlite3_mprintf("select %q from %q where %q = '%q' and id= '%q'",sel,tbname,col,id,id2);
         result =sqlite3_exec(db, zSQL,c_callback,cont , &db_err);
         sqlite3_free(zSQL);
         if(result != SQLITE_OK)

@@ -6,6 +6,7 @@ EXPORTS
     add_params @5
     add_text @6
     del_item @7
-    id_row @8
-    n_row @9
-    row @10
+    get_item @8
+    id_row @9
+    n_row @10
+    row @11

@@ -37,12 +37,13 @@ extern "C"
       // int DLL_EXPORT fill(sqlite3* db, string tbname);
       // void DLL_EXPORT display(sqlite3* db, string tbname);
       // void DLL_EXPORT jokersql(sqlite3* db, string sql);
-       int DLL_EXPORT add_params(sqlite3* db, const char* tbname,const char* col,const char* item,const char* item2,const char* item3);
+       int DLL_EXPORT add_params(sqlite3* db, const char* tbname,const char* col,const char* id,const char* item,const char* item2,const char* item3);//being used
        int DLL_EXPORT row(sqlite3* db,const char* tbname,const char* col,const char* id,int (*callback)(void*,int,char**,char**),void *answer); //being used
        int DLL_EXPORT id_row(sqlite3* db, const char* tbname,const char* col,const char* sel,int (*c_callback)(void*,int,char**,char**),void *answer); // being used
        int DLL_EXPORT n_row(sqlite3* db,const char* tbname,int (*callback)(void*,int,char**,char**),void *answer); //being used
-       int DLL_EXPORT add_text(sqlite3* db,const char* tbname,const char* col,const char* id,const char* item);//being used
+       int DLL_EXPORT add_text(sqlite3* db,const char* tbname,const char* col,const char* id,const char* item,const char* idname);//being used
        // string DLL_EXPORT readFromDB(sqlite3* db, int id);
+     int DLL_EXPORT get_item(sqlite3* db,const char* tbname,const char* sel,const char* col,const char* id,const char* id2,int (*c_callback)(void*,int,char**,char**),void *answer);//being used
 
 
 #ifdef __cplusplus
