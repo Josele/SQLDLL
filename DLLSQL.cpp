@@ -1,34 +1,5 @@
 #include "DLLSQL.h"
 
-/**
-// This function just display an error message that
-  void dsperr(char**db_err)
-{
-    if( *db_err )
-    {
-        cout << *db_err << "\n";
-        sqlite3_free(*db_err); // release (free) memory
-        *db_err = 0; // reinitialize the caller's pointer
-    }
-}
-// Parameters are:
-//      argc -- the number of rows in the resultset
-//      argv[] -- the data for each row
-//      azColName -- the name of each column
- int callback(void *NotUsed, int argc, char **argv, char **azColName){
-  int i;
-  for(i=0; i<argc; i++){
-    cout << azColName[i]
-          << " = ";
-    if( argv[i] )
-        cout << argv[i];
-    else
-        cout << "NULL";
-     cout << "\n";
-  }
-  return 0;
-}
-*/
 
 // Create a new or open an existing database.
 // If the database does not exist it will be
@@ -59,11 +30,19 @@
         {
             throw std::invalid_argument( "Invalid argument table name");
         }
-    char* zSQL = sqlite3_mprintf("CREATE TABLE %q (id integer primary key asc,name char(10), ref TEXT DEFAULT 'New', parms TEXT DEFAULT '', libs TEXT DEFAULT '', ret TEXT DEFAULT 'void')",tbname);
+    char* zSQL = sqlite3_mprintf("CREATE TABLE %q (id integer primary key asc,name char(10), ref TEXT DEFAULT '', parms TEXT DEFAULT 'result', ret TEXT DEFAULT 'void')",tbname);
     int n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
     if( n != SQLITE_OK )
         throw std::runtime_error("Sqlite3 failure "+ string(db_err));
-    zSQL = sqlite3_mprintf("CREATE TABLE params (id integer,name char(15) DEFAULT '',type char(10) DEFAULT '', value char(30) DEFAULT '', FOREIGN KEY (id)  REFERENCES datos(id) ON DELETE CASCADE)");
+    zSQL = sqlite3_mprintf("CREATE TABLE params (id integer,name char(15) DEFAULT '',type char(10) DEFAULT '',array int(1) DEFAULT '0', value char(30) DEFAULT '', FOREIGN KEY (id)  REFERENCES datos(id) ON DELETE CASCADE)");
+    n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
+    if( n != SQLITE_OK )
+        throw std::runtime_error("Sqlite3 failure "+ string(db_err));
+    zSQL = sqlite3_mprintf("CREATE TABLE config (id integer primary key,name char(30) DEFAULT '',libs TEXT DEFAULT '-1')");
+    n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
+    if( n != SQLITE_OK )
+        throw std::runtime_error("Sqlite3 failure "+ string(db_err));
+    zSQL = sqlite3_mprintf("INSERT INTO config (id) VALUES(1)");
     n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
     sqlite3_free(zSQL);
     if( n != SQLITE_OK )
@@ -75,46 +54,15 @@
 
 }
 
-/**
-// Just dump some data into the table.  You don't
-// have a choice of the kind or quantity of data to be entered.
-//
- int DLL_EXPORT fill(sqlite3* db, string tbname)
-{
-    char* db_err = 0;
-        if (tbname==std::string())
-            //tbname.length() == 0
-        {"CREATE TABLE params (name TEXT ,type char(10) DEFAULT '', value TEXT DEFAULT '', FOREIGN KEY(name) REFERENCES datos(name))
-         cout << "Null tbname\n";
-            return 0;
-
-        }
-
-    for(int i = 1; i < 100; i++)
-    {
-        char buf[80];
-        sprintf(buf,"insert into %s values(%d);", tbname.c_str(), i);
-        int n = sqlite3_exec(db, buf, NULL, 0, &db_err);
-        //dsperr(&db_err);
-        if( n != SQLITE_OK )
-        {
-            cout << "Error inserting value " << i << "\n";
-            break;
-        }
-    }
-    return 1;
-}
-
-*/
 // Add params item to a table
 // The column must be specify
 //
- int DLL_EXPORT add_params(sqlite3* db, const char* tbname,const char* col,const char* id,const char* item,const char* item2,const char* item3)
+ int DLL_EXPORT add_params(sqlite3* db, const char* tbname,const char* col,const char* id,const char* item,const char* item2,const char* item3,const char* item4)
 {
     char* db_err = 0;
-    if (tbname=='\0'||col=='\0'||item=='\0')
+    if (tbname=='\0'||col=='\0'||item=='\0'||item2=='\0'||item3=='\0'||item4=='\0')
         throw std::invalid_argument( "stoi: invalid argument table name");
-    char *zSQL = sqlite3_mprintf("INSERT INTO %q (%s) VALUES(%Q,%Q,%Q,%Q)", tbname,col,id,item,item2,item3);
+    char *zSQL = sqlite3_mprintf("INSERT INTO %q (%s) VALUES(%Q,%Q,%Q,%Q,%Q)", tbname,col,id,item,item2,item3,item4);
     int n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
     sqlite3_free(zSQL);
     if( n != SQLITE_OK )
@@ -197,29 +145,7 @@ int DLL_EXPORT add_text(sqlite3* db,const char* tbname,const char* col,const cha
     return 0;
 }
 
-/**
-// Query the database for all the data in the table and
-// display it in the callback function.
- void DLL_EXPORT display(sqlite3* db, string tbname)
-{
-    char* db_err = 0;
-    string select;
-    if (tbname==std::string())
-            //tbname.length() == 0
-        {
-         cout << "Null tbname\n";
-            return;
 
-        }
-    if( tbname.length() > 0)
-    {
-        select = "select * from " + tbname + ";";
-        sqlite3_exec(db, select.c_str(), callback, 0, &db_err);
-        dsperr(&db_err);
-    }
-}
-
-*/
 // Query the database for one column data in the table and
 // display it in the callback function.
  int DLL_EXPORT row(sqlite3* db,const char* tbname,const char* col,const char* id,int (*c_callback)(void*,int,char**,char**),void *answer)
@@ -298,42 +224,7 @@ int DLL_EXPORT add_text(sqlite3* db,const char* tbname,const char* col,const cha
         throw std::runtime_error("sqlite3_open_v2 failure: "+string(db_err));
     return 0;
 }
-
 /**
-string DLL_EXPORT readFromDB(sqlite3* db, int id)
-{   string result;
-    sqlite3_stmt *stmt;
-     const char *sql="SELECT name FROM datos WHERE id = ?";
-    int rc = sqlite3_prepare_v2(db, sql,-1 , &stmt, NULL);
-    if (rc != SQLITE_OK)
-        return string(sqlite3_errmsg(db));
-
-    rc = sqlite3_bind_int(stmt, 1, id);    // Using parameters ("?") is not
-    if (rc != SQLITE_OK) {                 // really necessary, but recommended
-        string errmsg(sqlite3_errmsg(db)); // (especially for strings) to avoid
-        sqlite3_finalize(stmt);            // formatting problems and SQL
-        return errmsg;                      // injection attacks.
-    }
-
-    rc = sqlite3_step(stmt);
-    if (rc != SQLITE_ROW && rc != SQLITE_DONE) {
-        string errmsg(sqlite3_errmsg(db));
-        sqlite3_finalize(stmt);
-        return errmsg;
-    }
-    if (rc == SQLITE_DONE) {
-        sqlite3_finalize(stmt);
-        return string("customer not found");
-    }
-
-    *result= string((char *)sqlite3_column_text(stmt, 0))+ " ";
-    *result=*result + string((char*)sqlite3_column_text(stmt, 1)) +" ";
-     *result=*result + string((char*)sqlite3_column_int(stmt, 2));
-
-    sqlite3_finalize(stmt);
-   return result;
-}
-
 // Query an SQL sentence, only for making proofs
  void DLL_EXPORT jokersql(sqlite3* db, string sql)
 {
@@ -356,21 +247,7 @@ string DLL_EXPORT readFromDB(sqlite3* db, int id)
 */
 
 
-/**
-// This function just display an error message that
-  int DLL_EXPORT ejemplo(char db_err)
-{
-    return 1;
-}
-*/
 
-/**
-// a sample exported function
-void DLL_EXPORT SomeFunction(const LPCSTR sometext)
-{
-    MessageBoxA(0, sometext, "DLL Message", MB_OK | MB_ICONINFORMATION);
-}
-*/
 extern "C" DLL_EXPORT BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
     switch (fdwReason)
