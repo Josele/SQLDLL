@@ -8,5 +8,6 @@ EXPORTS
     del_item @7
     get_item @8
     id_row @9
-    n_row @10
-    row @11
+    max_parms @10
+    n_row @11
+    row @12

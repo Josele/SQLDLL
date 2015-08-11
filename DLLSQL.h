@@ -43,8 +43,8 @@ extern "C"
        int DLL_EXPORT n_row(sqlite3* db,const char* tbname,int (*callback)(void*,int,char**,char**),void *answer); //being used
        int DLL_EXPORT add_text(sqlite3* db,const char* tbname,const char* col,const char* id,const char* item,const char* idname);//being used
        // string DLL_EXPORT readFromDB(sqlite3* db, int id);
-     int DLL_EXPORT get_item(sqlite3* db,const char* tbname,const char* sel,const char* col,const char* id,const char* id2,int (*c_callback)(void*,int,char**,char**),void *answer);//being used
-
+        int DLL_EXPORT get_item(sqlite3* db,const char* tbname,const char* sel,const char* col,const char* id,const char* id2,int (*c_callback)(void*,int,char**,char**),void *answer);//being used
+        int DLL_EXPORT max_parms(sqlite3* db,const char* tbname,const char* col,int (*c_callback)(void*,int,char**,char**),void *answer);//being used
 
 #ifdef __cplusplus
 }

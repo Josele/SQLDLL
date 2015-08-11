@@ -38,7 +38,7 @@
     n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
     if( n != SQLITE_OK )
         throw std::runtime_error("Sqlite3 failure "+ string(db_err));
-    zSQL = sqlite3_mprintf("CREATE TABLE config (id integer primary key,name char(30) DEFAULT '',libs TEXT DEFAULT '-1')");
+    zSQL = sqlite3_mprintf("CREATE TABLE config (id integer primary key,name char(30) DEFAULT '',libs TEXT DEFAULT '-1',CC TEXT DEFAULT 'none')");
     n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
     if( n != SQLITE_OK )
         throw std::runtime_error("Sqlite3 failure "+ string(db_err));
@@ -159,6 +159,31 @@ int DLL_EXPORT add_text(sqlite3* db,const char* tbname,const char* col,const cha
 
         }
         char *zSQL = sqlite3_mprintf("select %q from %q where id = %q",col,tbname,id);
+        result =sqlite3_exec(db, zSQL,c_callback,cont , &db_err);
+        sqlite3_free(zSQL);
+        if(result != SQLITE_OK)
+            throw std::runtime_error("sqlite3_open_v2 failure: "+string(db_err));
+
+        return 0;
+
+
+
+
+
+}
+// Query the database for one column data in the table and
+// display it in the callback function.
+ int DLL_EXPORT max_parms(sqlite3* db,const char* tbname,const char* col,int (*c_callback)(void*,int,char**,char**),void *answer)
+{   int result;
+    string* cont = static_cast<string*>(answer);
+    char* db_err = 0;
+    string select;
+    if (tbname=='\0'||  col=='\0')
+        {
+            throw std::invalid_argument( "stoi: invalid argument table name or column");
+
+        }
+        char *zSQL = sqlite3_mprintf("SELECT MAX(count) FROM( SELECT COUNT(*) AS count FROM %q GROUP BY %q ORDER BY count DESC) AS count;",tbname,col);
         result =sqlite3_exec(db, zSQL,c_callback,cont , &db_err);
         sqlite3_free(zSQL);
         if(result != SQLITE_OK)
