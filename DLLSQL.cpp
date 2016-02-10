@@ -38,7 +38,7 @@
     n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
     if( n != SQLITE_OK )
         throw std::runtime_error("Sqlite3 failure "+ string(db_err));
-    zSQL = sqlite3_mprintf("CREATE TABLE config (id integer primary key,name char(30) DEFAULT '',libs TEXT DEFAULT '-1',CC TEXT DEFAULT 'none')");
+    zSQL = sqlite3_mprintf("CREATE TABLE config (id integer primary key,name char(30) DEFAULT '',libs TEXT DEFAULT '-1',CC TEXT DEFAULT 'none',GppPath TEXT DEFAULT '')");
     n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
     if( n != SQLITE_OK )
         throw std::runtime_error("Sqlite3 failure "+ string(db_err));
@@ -107,6 +107,24 @@ int DLL_EXPORT add_text(sqlite3* db,const char* tbname,const char* col,const cha
         }
     return 0;
 }
+// Add one text to a table using UPDATE query
+// The column must be specify and the id
+//
+int DLL_EXPORT add_text_v2(sqlite3* db,const char* tbname,const char* col,const char* item,const char* idname,const char* id,const char* idname2,const char* id2)
+{
+    char* db_err = 0;
+    if (tbname=='\0'||col=='\0'||item=='\0'||idname=='\0'||id=='\0'||idname2=='\0'||id2=='\0')
+        throw std::invalid_argument( "stoi: invalid argument table name");
+
+    char *zSQL = sqlite3_mprintf("UPDATE %s SET %s=(%Q) WHERE (%s='%q' AND %s='%q')", tbname,col,item,idname,id,idname2,id2);
+    int n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
+    sqlite3_free(zSQL);
+    if( n != SQLITE_OK )
+        {
+        throw std::runtime_error("sqlite3_exec failure: "+string(db_err));
+        }
+    return 0;
+}
 // Delete one item to a table
 // The column must be specify
 //
@@ -125,6 +143,44 @@ int DLL_EXPORT add_text(sqlite3* db,const char* tbname,const char* col,const cha
         throw std::runtime_error("sqlite3_exec failure: "+string(db_err));
         }
     zSQL = sqlite3_mprintf("delete from %q where %q = '%q'", tbname,id,item);
+        //sprintf(buf,"delete from %s where id = %s;", tbname.c_str(),iid,tem.c_str());
+     n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
+    //dsperr(&db_err);
+    if( n != SQLITE_OK )
+        {
+        throw std::runtime_error("sqlite3_exec failure: "+string(db_err));
+        }
+        zSQL = sqlite3_mprintf("PRAGMA foreign_keys = OFF;");
+        //sprintf(buf,"delete from %s where id = %s;", tbname.c_str(),iid,tem.c_str());
+     n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
+    //dsperr(&db_err);
+    sqlite3_free(zSQL);
+    if( n != SQLITE_OK )
+        {
+        throw std::runtime_error("sqlite3_exec failure: "+string(db_err));
+        }
+
+    return 0;
+}
+
+// Delete one item to a table
+// The column must be specify
+//
+ int DLL_EXPORT del_item_v2(sqlite3* db, const char* tbname,const char* item,const char* id,const char* item2,const char* id2)
+{
+    char* db_err = 0;
+    if (tbname=='\0'||item=='\0'||id=='\0'||item2=='\0'||id2=='\0')
+        throw std::invalid_argument( "stoi: invalid argument table name");
+
+    char *zSQL = sqlite3_mprintf("PRAGMA foreign_keys = ON");
+        //sprintf(buf,"delete from %s where id = %s;", tbname.c_str(),iid,tem.c_str());
+    int n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
+    //dsperr(&db_err);
+    if( n != SQLITE_OK )
+        {
+        throw std::runtime_error("sqlite3_exec failure: "+string(db_err));
+        }
+    zSQL = sqlite3_mprintf("delete from %q where (%q = '%q' and %q= '%q')", tbname,id,item,id2,item2);
         //sprintf(buf,"delete from %s where id = %s;", tbname.c_str(),iid,tem.c_str());
      n = sqlite3_exec(db, zSQL, NULL, 0, &db_err);
     //dsperr(&db_err);

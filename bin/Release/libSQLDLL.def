@@ -5,9 +5,11 @@ EXPORTS
     add_item @4
     add_params @5
     add_text @6
-    del_item @7
-    get_item @8
-    id_row @9
-    max_parms @10
-    n_row @11
-    row @12
+    add_text_v2 @7
+    del_item @8
+    del_item_v2 @9
+    get_item @10
+    id_row @11
+    max_parms @12
+    n_row @13
+    row @14
